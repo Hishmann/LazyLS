@@ -4,78 +4,145 @@
 #include <format>
 #include <thread>
 #include <chrono>
+#include <functional>
+#include <csignal>
 #include "inc/constants.h"
 
-std::string draw_square_text_box(int row, int col, int sz, std::string box_content, const std::string& colour ) {
 
-    std::string out_str;
-    int text_row = sz / 2;
-    int text_col =  sz - box_content.size() / 2;
+// Global or static flag
+bool running = true;
 
-    for (int i = 0; i < sz; i++) {
-        out_str += std::format("\e[{};{}H", row+i, col) + colour;
-        for (int j = 0; j < 2*sz; j++) {
-            if (i == text_row && j >= text_col && j < text_col + box_content.size()) {
-                out_str += box_content[j-text_col];
-                continue;
+void signalHandler(int signum) {
+    running = false;
+}
+
+typedef struct PixelCoordinates {
+    int x;
+    int y;
+};
+
+class RenderElement {
+    protected:
+        std::string representation = "";
+        std::function<bool(RenderElement&)> update_element;
+        virtual void update_representation() = 0;
+
+    public:
+        RenderElement(std::function<bool(RenderElement&)> func) 
+        : update_element(std::move(func)) {}
+
+        std::string representation_str() {
+            if (representation.empty() || update_element && update_element(*this)) {
+                update_representation();
             }
-            out_str+= " ";
+            return representation;
+        };
+}; 
+
+class Box : public RenderElement {
+    public:
+        int w, h;
+        PixelCoordinates coord;
+        std::string colour;
+
+        Box(int width, int height, PixelCoordinates coordinates, const std::string& box_colour, std::function<bool(RenderElement&)> func) : 
+        RenderElement(std::move(func)), w {width}, h {height}, coord {coordinates}, colour {box_colour} {}
+
+    protected:
+
+        void update_representation() {
+            std::stringstream ss;
+            for (int i = 0; i < h; i++) {
+                ss << std::format("\e[{};{}H", coord.y+i, coord.x) + colour;
+                for (int j = 0; j < w; j++) {
+                    ss << " ";
+                }
+                ss << "\e[0m";
+            }
+            representation = ss.str();
         }
-        out_str += "\e[0m\n";
+
+};
+
+class Screen {
+
+    int row, col;
+    std::vector<std::unique_ptr<RenderElement>> elements;
+
+    public:
+    
+    Screen() {
+        winsize w{};
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+            row = w.ws_row;
+            col = w.ws_col;
+        } else {
+            std::perror("ioctl(TIOCGWINSZ)");
+            throw std::runtime_error("ioctl(TIOCGWINSZ)");
+        }
+
+        // Enter alternate buffer and hide cursor
+        std::cout << "\033[?1049h" << "\033[?25l" << std::flush;
     }
 
-    return out_str;
-}
+    ~Screen() {
+        // Clean up: Show cursor and exit alternate buffer
+        std::cout << "\033[?25h" << "\033[?1049l" << std::flush;
+    }
+
+    int get_row() {return row;}
+
+    int get_col() {return col;}
+
+    void add_element(std::unique_ptr<RenderElement> e) {
+        elements.push_back(std::move(e));
+    }
+
+    void render() {
+
+        while (running) {
+            std::stringstream ss;
+            ss << "\e[2J"; // clear screen (can cause flickering so alternate would be to maybe print the whole empty grid?)
+            ss <<  "\e[H"; // reset cursor
+
+            for (auto& s : elements) {
+                ss << s -> representation_str();
+            }
+
+            std::cout << ss.str() << std::flush;
+            std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(10));
+        }
+    }
+
+};
 
 int main() {
 
-    // std::cout << "Unicode: " << '\u03C0' << '\n';
-    // // Grinning face
-    // std::cout << "Beyond BMP: " << '\U0001F600' << '\n';
-    // // Greek letter lambda
-    // std::cout << "UTF-8: " << u8"\u03BB" << ", " << u8"\u03C0" << '\n';
-    
-    winsize w{};
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
-        // w.ws_col = columns, w.ws_row = rows
-        std::printf("cols=%u rows=%u\n", w.ws_col, w.ws_row);
-    } else {
-        std::perror("ioctl(TIOCGWINSZ)");
-    }
+    std::signal(SIGINT, signalHandler); // Catch Ctrl+C
 
-    int anim_i = 0;
-    struct coord { int row; int col; } box_coord = {4, 15};
-    std::string screen_output;
+    Screen screen;
 
-    while (true) {
-        auto start = std::chrono::high_resolution_clock::now();
+    screen.add_element(
+        std::make_unique<Box>(10, 5, PixelCoordinates{15,4}, TERM_CONST_PRG::RED, [&screen](RenderElement& e) {
 
-        screen_output = "";
+            Box& b = static_cast<Box&>(e);
+            static int box_anim;
 
-        screen_output += "\e[2J"; // clear screen
-        screen_output += "\e[1;1H";
-        screen_output += draw_square_text_box(box_coord.row, box_coord.col, 5, "Test", TERM_CONST_PRG::RED);
-        screen_output += "\e[1;1H";
-
-        std::cout << screen_output << std::endl;
-
-        anim_i += 1;
-        if (anim_i >= frameRate / 32) {
-            anim_i = 0;
-            box_coord.col += 1;
-            if (box_coord.col >= w.ws_col - 10) {
-                box_coord.col = 1;
+            box_anim += 1;
+            if (box_anim > 50) {
+                b.coord.x += 1;
+                box_anim = 0;
+                if (b.coord.x == screen.get_col() ) {
+                    b.coord.x = 1;
+                }
+                return true;
             }
-        }
 
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> diff = end - start;
+            return false;
+        })
+    );
 
-        if (diff.count() < frameTime / 1000.0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(frameTime - diff.count() * 1000)));
-        }
-    }
-
+    screen.render();    
 
     return 0;
 }
