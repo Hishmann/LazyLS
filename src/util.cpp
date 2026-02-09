@@ -1,6 +1,6 @@
 #include "util.h"
 
-#include "constants.h"
+#include "global.h"
 
 void set_raw_mode(bool enable) {
     termios raw;

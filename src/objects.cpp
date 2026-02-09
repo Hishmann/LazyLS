@@ -3,14 +3,7 @@
 #include "objects.h"
 
 
-std::string RenderElement::representation_str() {
-    if (representation.empty() || update_element && update_element(*this)) {
-        update_representation();
-    }
-    return representation;
-};
-
-void Box::update_representation() {
+void BoxRenderElement::make() {
     std::stringstream ss;
     for (int i = 0; i < h; i++) {
         ss << std::format("\e[{};{}H", coord.y+i, coord.x) + colour;
@@ -19,6 +12,6 @@ void Box::update_representation() {
         }
         ss << "\e[0m";
     }
-    representation = ss.str();
+    rep = ss.str();
 }
 

@@ -1,6 +1,10 @@
 #pragma once
 
+#include "objects.h"
+
 inline bool running = true; // Global or static flag
+
+inline EventQueue g_event_queue;
 
 namespace TERM_CONST_PRG {
 
