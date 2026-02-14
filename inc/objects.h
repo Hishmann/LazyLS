@@ -107,16 +107,41 @@ class RenderElement : public BaseRenderElement {
 }; 
 
 
+class EmptyRenderElement: public RenderElement<EmptyRenderElement> {
+    protected:
+        void make() override { rep = ""; };
+    public:
+        EmptyRenderElement(
+            PixelCoordinates coordinates, std::function<bool(EmptyRenderElement&, const Event&)> func
+        ) : RenderElement<EmptyRenderElement>(coordinates, std::move(func)) {}
+};
+
+
 class BoxRenderElement : public RenderElement<BoxRenderElement> {
     protected:
         void make() override;
     public:
         int w, h;
-        std::string colour;
+        std::string style_colour;
 
         BoxRenderElement(
-            int width, int height, PixelCoordinates coordinates, const std::string& box_colour, std::function<bool(BoxRenderElement&, const Event&)> func
+            int width, int height, PixelCoordinates coordinates, const std::string& box_style_colour, std::function<bool(BoxRenderElement&, const Event&)> func
         ) : 
             RenderElement<BoxRenderElement>(coordinates, std::move(func)), 
-            w {width}, h {height}, colour {box_colour} {}
+            w {width}, h {height}, style_colour {box_style_colour} {}
+};
+
+
+class TextRenderElement: public RenderElement<TextRenderElement> {
+    protected:
+        void make() override;
+    public:
+        std::string text;
+        std::string style_colour;
+
+    TextRenderElement(
+        const std::string& txt, PixelCoordinates coordinates, const std::string& txt_style_colour, std::function<bool(TextRenderElement&, const Event&)> func
+    ) :
+        RenderElement<TextRenderElement>(coordinates, std::move(func)),
+        text {txt}, style_colour {txt_style_colour} {}
 };

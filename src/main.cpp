@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include <sys/ioctl.h>
+
 #include <poll.h>
 #include <unistd.h>
 #include <csignal>
@@ -58,6 +58,13 @@ void input_handling() {
 
                     accumulated.erase(0, 1);
 
+                } else if (!accumulated.empty()) {
+                    Event e; e.type = EventType::KEY_PRESS;
+                    e.keyboard.key = accumulated[0]; e.keyboard.modifiers = 0;
+                    g_event_queue.push(e);
+
+                    accumulated.erase(0, 1);
+
                 } else if (accumulated.size() > 32) {
 
                     accumulated.clear(); // If the buffer starts with something unrecognizable and grows too large
@@ -85,15 +92,7 @@ class Screen {
 
     public:
     
-    Screen() {
-        winsize w{};
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
-            row = w.ws_row;
-            col = w.ws_col;
-        } else {
-            std::perror("ioctl(TIOCGWINSZ)");
-            throw std::runtime_error("ioctl(TIOCGWINSZ)");
-        }
+    Screen(int w_row, int w_col) : row{w_row}, col{w_col} {
 
         set_raw_mode(true);
 
@@ -137,7 +136,7 @@ void Screen::render() {
         batch = g_event_queue.pop_all();
         if (!batch.empty()) {
             for (const auto& e : batch) {
-                if (e.type == EventType::QUIT) running = false;
+                if (e.type == EventType::QUIT) { running = false; }
                 for (auto& s : elements) {
                     s -> update(e);
                 }
@@ -156,35 +155,62 @@ void Screen::render() {
 
 }
 
+
 int main() {
 
-    std::signal(SIGINT, signalHandler); // Catch Ctrl+C
+    std::signal(SIGINT, [](int signum) {
+        running = false;
+    }); // Catch Ctrl+C
 
-    Screen screen;
+    WindowSize w = get_window_size();
 
-    screen.add_element(
-        std::make_unique<BoxRenderElement>(10, 5, PixelCoordinates{15,4}, TERM_CONST_PRG::RED, [&screen](BoxRenderElement& b, const Event& e) {
+    // Screen screen(w.r, w.c);
 
-            static int box_anim;
+    // screen.add_element(
+    //     std::make_unique<BoxRenderElement>(
+    //         10, 5, PixelCoordinates{15,4}, style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}), 
+    //         [&screen](BoxRenderElement& b, const Event& e) {
 
-            if (e.type == EventType::MOUSE_PRESS && e.mouse.button == 0) {
-                b.coord.x += 1;
-                box_anim = 0;
-                if (b.coord.x == screen.get_col() ) {
-                    b.coord.x = 1;
-                }
-                return true;
-            }
+    //         if (e.type == EventType::MOUSE_PRESS && e.mouse.button == 0) {
+    //             b.coord.x += 1;
+    //             if (b.coord.x == screen.get_col() ) {
+    //                 b.coord.x = 1;
+    //             }
+    //             return true;
+    //         }
 
-            return false;
-        })
-    );
+    //         return false;
+    //     })
+    // );
 
-    std::thread inp_han(input_handling); // seperate polling thread for input handling
+    // screen.add_element(
+    //     std::make_unique<TextRenderElement>(
+    //         "  To Lazy to LS  ",
+    //         PixelCoordinates{1,1}, 
+    //         style_rgb_code({PRG_CONST::BOLD, PRG_CONST::ITALIC}, RGB_FB{255,255,255}, RGB_FB{0,0,0}), 
+    //         [&screen](TextRenderElement& b, const Event& e) {
+                
+    //             if (e.type == EventType::KEY_PRESS) {
+    //                 if (e.keyboard.key == 127 && !b.text.empty()) {
+    //                     b.text.pop_back();
+    //                 } else {
+    //                     b.text += e.keyboard.key;
+    //                 }
+    //                 return true;
+    //             }
 
-    screen.render();   
+    //             return false;
+    //         }
+    //     )
+    // );
 
-    inp_han.join();
+    // std::thread inp_han(input_handling); // seperate polling thread for input handling
+
+    // screen.render();   
+
+    // inp_han.join();
+
+
 
     return 0;
 }
