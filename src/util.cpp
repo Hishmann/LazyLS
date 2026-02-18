@@ -1,6 +1,5 @@
 #include "util.h"
 
-#include "global.h"
 
 WindowSize get_window_size() {
     winsize w{};
@@ -13,14 +12,28 @@ WindowSize get_window_size() {
 }
 
 void set_raw_mode(bool enable) {
-    termios raw;
-    tcgetattr(STDIN_FILENO, &raw);
-    if (enable) {
-        raw.c_lflag &= ~(ECHO | ICANON); // Turn off echo and line buffering
-    } else {
-        raw.c_lflag |= (ECHO | ICANON);
+
+    static termios orig_termios;
+    static bool first_call = true;
+
+    if (first_call) {
+        tcgetattr(STDIN_FILENO, &orig_termios);
+        first_call = false;
     }
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+
+    if (enable) {
+        termios raw = orig_termios;
+
+        raw.c_lflag &= ~(ECHO | ICANON | IEXTEN); // Turn off echo, line buffering, ctrl-V special func
+        raw.c_iflag &= ~(IXON | ICRNL); // Disable start/stop, Disable carraige mapping to newline
+        raw.c_oflag &= ~(OPOST); // prevents \n being turned into \r\n)
+
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+
+    } else {
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+    }
+
 }
 
 std::string style_rgb_code(std::initializer_list<std::string_view> styles, std::optional<RGB_FB> fg = std::nullopt, std::optional<RGB_FB> bg = std::nullopt) {

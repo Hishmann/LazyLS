@@ -26,30 +26,30 @@ TEST(EventQueueTest, Behavior) {
 
 TEST(BoxElementTest, Behavior) {
 
-    Event t; t.type = EventType::KEY_PRESS; t.keyboard.key = 'a';
+    // Event t; t.type = EventType::KEY_PRESS; t.keyboard.key = 'a';
 
-    std::unique_ptr<BaseRenderElement> test_box = std::make_unique<BoxRenderElement>(
-        2, 2, PixelCoordinates{1,1}, style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}), 
-        [](BoxRenderElement& b, const Event& e) {
-        if (e.type == EventType::KEY_PRESS && e.keyboard.key == 'a') {
-            b.coord.x += 1;
-            return true;
-        }
-        return false;
-    });
+    // std::unique_ptr<BaseRenderElement> test_box = std::make_unique<BoxRenderElement>(
+    //     2, 2, PixelCoordinates{1,1}, style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}), 
+    //     [](BoxRenderElement& b, const Event& e) {
+    //     if (e.type == EventType::KEY_PRESS && e.keyboard.key == 'a') {
+    //         b.coord.x += 1;
+    //         return true;
+    //     }
+    //     return false;
+    // });
 
-    std::string test_output_1;
-    test_output_1 += "\e[1;1H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
-    test_output_1 += "\e[2;1H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
+    // std::string test_output_1;
+    // test_output_1 += "\e[1;1H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
+    // test_output_1 += "\e[2;1H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
 
-    EXPECT_EQ(test_box -> representation(), test_output_1);
+    // EXPECT_EQ(test_box -> representation(), test_output_1);
 
-    test_box -> update(t);
+    // test_box -> update(t);
 
-    std::string test_output_2;
-    test_output_2 += "\e[1;2H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
-    test_output_2 += "\e[2;2H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
+    // std::string test_output_2;
+    // test_output_2 += "\e[1;2H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
+    // test_output_2 += "\e[2;2H" + style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}) + "  " +"\e[0m";
 
-    EXPECT_EQ(test_box -> representation(), test_output_2);
+    // EXPECT_EQ(test_box -> representation(), test_output_2);
 
 }

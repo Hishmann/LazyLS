@@ -2,14 +2,9 @@
 
 #include <string_view>
 
-#include "objects.h"
-
-
-inline bool running = true; // Global or static flag
-
-inline EventQueue g_event_queue; // for global usecase
 
 namespace PRG_CONST {
+
     using namespace std::string_view_literals;
 
     // Reset
@@ -52,4 +47,42 @@ namespace PRG_CONST {
     inline constexpr std::string_view RESET_INVERSE       = "27"sv;
     inline constexpr std::string_view RESET_INVISIBLE     = "28"sv;
     inline constexpr std::string_view RESET_STRIKETHROUGH = "29"sv;
+
+}
+
+namespace PRG_DRAW {
+
+    inline constexpr std::string_view BOX_TL = "┌";
+    inline constexpr std::string_view BOX_TL_H = "┏";
+
+    inline constexpr std::string_view BOX_TR = "┐";
+    inline constexpr std::string_view BOX_TR_H = "┓";
+
+    inline constexpr std::string_view BOX_BL = "└";           
+    inline constexpr std::string_view BOX_BL_H = "┗";
+
+    inline constexpr std::string_view BOX_BR = "┘";
+    inline constexpr std::string_view BOX_BR_H = "┛";
+
+    inline constexpr std::string_view BOX_HOR = "─";
+    inline constexpr std::string_view BOX_HOR_H = "━";
+
+    inline constexpr std::string_view BOX_VER = "│";
+    inline constexpr std::string_view BOX_VER_H = "┃";
+
+    inline constexpr std::string_view BOX_ML = "├";
+    inline constexpr std::string_view BOX_ML_H = "┣";
+
+    inline constexpr std::string_view BOX_MR = "┤";
+    inline constexpr std::string_view BOX_MR_H = "┫";
+
+    inline constexpr std::string_view BOX_MT = "┬";
+    inline constexpr std::string_view BOX_MT_H = "┳";
+
+    inline constexpr std::string_view BOX_MB = "┴";
+    inline constexpr std::string_view BOX_MB_H = "┻";
+
+    inline constexpr std::string_view BOX_M = "┼";
+    inline constexpr std::string_view BOX_M_H = "╋";
+
 }

@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 # Library for the logic
-add_library(LazyLS_Lib src/util.cpp src/objects.cpp src/file.cpp)
+add_library(LazyLS_Lib src/util.cpp src/objects.cpp src/file.cpp src/input.cpp)
 target_include_directories(LazyLS_Lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/inc")
 target_precompile_headers(LazyLS_Lib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc/pch.h")
 target_link_libraries(${PROJECT_NAME} PRIVATE LazyLS_Lib)

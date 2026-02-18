@@ -12,3 +12,4 @@
 #include <format>
 #include <mutex>
 #include <optional>
+#include <numeric>
