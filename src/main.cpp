@@ -96,6 +96,14 @@ void Screen::render() {
                     running = false; 
                 }
 
+                if (e.type == EventType::MOUSE_PRESS && e.mouse.button == PRG_CONST::MOUSE_SCROLL_U) {
+                    offset_constraint(0,1);
+                }
+
+                if (e.type == EventType::MOUSE_PRESS && e.mouse.button == PRG_CONST::MOUSE_SCROLL_D) {
+                    offset_constraint(0,-1);
+                }
+
                 for (auto& s : elements) {
                     s -> update(e);
                 }
@@ -133,26 +141,26 @@ int main() {
 
     Screen screen(w.r, w.c);
 
-    screen.add_element(
-        std::make_unique<BoxRenderElement>(
-            10, 5, style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}), PixelCoordinates{15,4},  
-            [&screen](BoxRenderElement& b, const Event& e) {
+    // screen.add_element(
+    //     std::make_unique<BoxRenderElement>(
+    //         10, 5, style_rgb_code({}, std::nullopt, RGB_FB{204,0,0}), PixelCoordinates{15,4},  
+    //         [&screen](BoxRenderElement& b, const Event& e) {
 
-            if (e.type == EventType::KEY_PRESS && e.keyboard.type == KeyType::RIGHT_ARROW) {
-                b.coord.x += 1;
-                if (b.coord.x == screen.get_col() ) {
-                    b.coord.x = 1;
-                }
-            }
+    //         if (e.type == EventType::KEY_PRESS && e.keyboard.type == KeyType::RIGHT_ARROW) {
+    //             b.coord.x += 1;
+    //             if (b.coord.x == screen.get_col() ) {
+    //                 b.coord.x = 1;
+    //             }
+    //         }
 
-        })
-    );
+    //     })
+    // );
 
     // screen.add_element(
     //     std::make_unique<TextRenderElement>(
     //         "  To Lazy to LS  ",
-    //         PixelCoordinates{1,1}, 
     //         style_rgb_code({PRG_CONST::BOLD, PRG_CONST::ITALIC}, RGB_FB{255,255,255}, RGB_FB{0,0,0}), 
+    //         PixelCoordinates{1,1}, 
     //         [&screen](TextRenderElement& b, const Event& e) {
                 
     //             if (e.type == EventType::KEY_PRESS) {
@@ -161,26 +169,24 @@ int main() {
     //                 } else {
     //                     b.text += e.keyboard.key;
     //                 }
-    //                 return true;
     //             }
 
-    //             return false;
     //         }
     //     )
     // );
 
-    // std::vector<std::vector<std::string>> test_vec_str = {
-    //     {"hmmmmm", "np"}, 
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"yes?", "why not"},
-    //     {"hmmmmm", "np"},
-    // };
+    std::vector<std::vector<std::string>> test_vec_str = {
+        {"hmmmmm", "np"}, 
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"yes?", "why not"},
+        {"hmmmmm", "np"},
+    };
 
     // screen.add_element(
     //     std::make_unique<TableRenderElement>(

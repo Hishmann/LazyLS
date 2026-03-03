@@ -112,10 +112,11 @@ class TextRenderElement: public RenderElement<TextRenderElement> {
 
 class TableRenderElement: public RenderElement<TableRenderElement> {
         using grid = std::vector<std::vector<std::string>>;
-        grid grid_content; 
-        std::vector<u_int> max_col_widths;
+
         u_int grid_row;
         u_int grid_col;
+        grid grid_content; 
+        std::vector<u_int> max_col_widths;
 
     public:
         std::string style_colour;

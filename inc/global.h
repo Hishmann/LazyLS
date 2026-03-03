@@ -5,6 +5,20 @@
 
 namespace PRG_CONST {
 
+    constexpr int MOUSE_LC = 0;
+    constexpr int MOUSE_MC = 1;
+    constexpr int MOUSE_RC = 2;
+    constexpr int MOUSE_RELEASE = 3; // old protocol
+    constexpr int MOUSE_MOVE = 32;
+    constexpr int MOUSE_SCROLL_U = 64;
+    constexpr int MOUSE_SCROLL_D = 65;
+    constexpr int MOUSE_BTN_4 = 128;
+    constexpr int MOUSE_BTN_5 = 129;
+
+    constexpr int MOUSE_MOD_SHIFT = 4;
+    constexpr int MOUSE_MOD_META = 8;
+    constexpr int MOUSE_MOD_CTRL = 16;
+
     using namespace std::string_view_literals;
 
     // Reset

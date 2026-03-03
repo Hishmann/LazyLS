@@ -26,8 +26,17 @@ void BoxRenderElement::render(const ScreenConstraints& s_c, TermCellGrid& buf) {
 }
 
 void TextRenderElement::render(const ScreenConstraints& s_c, TermCellGrid& buf) {
-    std::stringstream ss;
-    ss << std::format("\e[{};{}H", coord.y, coord.x) << style_colour << text << "\e[0m";
+    
+    for (int i = 0; i < text.size(); i++) {
+        if (!constraint_obeyed(coord.x + i, coord.y, s_c)) continue;
+
+        int target_y = coord.y - s_c.min_y;
+        int target_x = coord.x + i - s_c.min_x;
+
+        char* out = &text[i];
+
+        buf[target_y][target_x] = TermCell{out, style_colour};
+    }
 
 }
 
@@ -67,6 +76,7 @@ void TableRenderElement::render(const ScreenConstraints& s_c, TermCellGrid& buf)
     std::stringstream ss;  
 
     auto make_line = [&](std::string_view left, std::string_view mid, std::string_view right) {
+
         std::string line;
         line += left;
         for (int j = 0; j < grid_col; ++j) {
@@ -78,22 +88,53 @@ void TableRenderElement::render(const ScreenConstraints& s_c, TermCellGrid& buf)
         }
         line += right;
         return line;
+
     };
 
     std::string top_line = make_line(BOX_TL, BOX_MT, BOX_TR);
     std::string mid_line = make_line(BOX_ML, BOX_M,  BOX_MR);
     std::string bot_line = make_line(BOX_BL, BOX_MB, BOX_BR);
+    int tot_grid_col_width = top_line.size();
 
    for (int i = 0; i < grid_row; ++i) {
-        ss << std::format("\e[{};{}H", coord.y + (i * 2), coord.x);
-        ss << (i == 0 ? top_line : mid_line);
 
-        ss << std::format("\e[{};{}H", coord.y + (i * 2) + 1, coord.x);
-        for (int j = 0; j < grid_col; ++j) {
-            const auto& s = grid_content[i][j];
-            ss << BOX_VER << s << std::string(max_col_widths[j] - s.size(), ' ');
+        for (int l = 0; l < tot_grid_col_width; l++) {
+
+            if (!constraint_obeyed(coord.x + l, coord.y + (i * 2), s_c)) continue;
+            int target_y = coord.y + (i * 2) - s_c.min_y;
+            int target_x = coord.x + l - s_c.min_x;
+
+            char* out = (i == 0 ? &top_line[l] : &mid_line[l]);
+            buf[target_y][target_x] = TermCell{out, style_colour};
+
         }
-        ss << BOX_VER;
+
+        for (int j = 0; j < grid_col; j++) {
+            std::string& s = grid_content[i][j];
+            int col_width =  max_col_widths[j];
+            for (int l = 0; l < col_width; l++) {
+
+                if (!constraint_obeyed(coord.x + l, coord.y + (i * 2 + 1), s_c)) continue;
+                int target_y = coord.y + (i * 2 + 1) - s_c.min_y;
+                int target_x = coord.x + l - s_c.min_x;
+
+                const char* out = l < (col_width - s.size()) ? &s[l] : " ";
+                buf[target_y][target_x] = TermCell{out, style_colour};
+            }
+
+        }
+
+
+
+        // ss << std::format("\e[{};{}H", coord.y + (i * 2), coord.x);
+        // ss << (i == 0 ? top_line : mid_line);
+
+        // ss << std::format("\e[{};{}H", coord.y + (i * 2) + 1, coord.x);
+        // for (int j = 0; j < grid_col; ++j) {
+        //     const auto& s = grid_content[i][j];
+        //     ss << BOX_VER << s << std::string(max_col_widths[j] - s.size(), ' ');
+        // }
+        // ss << BOX_VER;
     }
 
     ss << std::format("\e[{};{}H", coord.y + (grid_row * 2), coord.x);
