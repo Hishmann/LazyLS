@@ -1,6 +1,6 @@
 # LazyLS
 
-Terminal program for people who want a constant view into the files present in their current working directory of their terminal. It uses **ANSI VT100 escape sequences** for custom terminal rendering and **Tmux** for the split terminal linked to the main Terminal. 
+Terminal program for people who want a constant view into the files present in their current working directory of their terminal. It uses **ANSI VT100 escape sequences** for custom terminal rendering, **Tmux** for the split terminal linked to the main Terminal, and Google Tests for implementing Unit tests. 
 
 The program is still currently in development and is close to completion.
 
@@ -19,5 +19,6 @@ The program is still currently in development and is close to completion.
 - [ ] Code Documentation.
 - [ ] Change input handling to  make it more testable.
 - [ ] Generic container input for input handling.
+- [ ] More in depth unit test coverage
 
 
